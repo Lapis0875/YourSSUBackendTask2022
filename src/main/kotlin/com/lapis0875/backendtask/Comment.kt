@@ -34,11 +34,11 @@ class Comment (
     @ColumnDefault(value="NOW()")
     var updatedAt: LocalDateTime = LocalDateTime.now(),
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE])
     @JoinColumn(name = "article_id")
     val article: Article,
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE])
     @JoinColumn(name = "user_id")
     val user: User
 ) {

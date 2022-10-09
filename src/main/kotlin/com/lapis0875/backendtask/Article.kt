@@ -38,11 +38,11 @@ class Article (
     @ColumnDefault(value="NOW()")
     var updatedAt: LocalDateTime = LocalDateTime.now(),
 
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false)
+    @ManyToOne(cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE], optional = false)
     @JoinColumn(name = "user_id")
     val user: User,
 
-    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "article", cascade = [CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE])
     val comments: List<Comment> = emptyList()
 ) {
     override fun equals(other: Any?): Boolean {
