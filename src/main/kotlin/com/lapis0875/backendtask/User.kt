@@ -3,11 +3,13 @@ package com.lapis0875.backendtask
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicInsert
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Example
 import org.springframework.data.domain.ExampleMatcher
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -88,6 +90,12 @@ interface UserRepository: JpaRepository<User, Long>
 @Service
 @Transactional
 class UserService(private val repository: UserRepository) {
+    @Autowired
+    lateinit var passwordEncoder: PasswordEncoder
+
+    fun compare(user: User, email: String, password: String): Boolean {
+        return user.email == email && passwordEncoder.matches(password, user.password)
+    }
     fun getAll(): List<UserDTO> = repository.findAll().map { it.toDTO() }
 
     fun getById(id: Long): User = repository.findByIdOrNull(id) ?:
@@ -95,13 +103,12 @@ class UserService(private val repository: UserRepository) {
 
     fun getByIdWrapped(id: Long): UserDTO = getById(id).toDTO()
 
-    fun getByPayload(email: String, password: String): User = repository.findOne(
+    fun getByPayload(email: String): User = repository.findOne(
         Example.of(
-            User(email, password, "NONE"),
+            User(email, "NONE", "NONE"),
             ExampleMatcher.matchingAll()
-                .withIgnorePaths("createdAt", "updatedAt", "userId", "username")
+                .withIgnorePaths("password", "createdAt", "updatedAt", "userId", "username")
                 .withMatcher("email", ExampleMatcher.GenericPropertyMatcher().exact())
-                .withMatcher("password", ExampleMatcher.GenericPropertyMatcher().exact())
         )).orElseThrow { throw EntityNotFoundException() }
 
     fun create(user: User): UserDTO {
@@ -110,6 +117,7 @@ class UserService(private val repository: UserRepository) {
             ExampleMatcher.matchingAll().withIgnorePaths("updatedAt"
         ))).isPresent
         if (exist) throw ResponseStatusException(HttpStatus.BAD_REQUEST)
+        user.password = passwordEncoder.encode(user.password)       // PasswordEncoder bean을 사용해 암호화.
         return repository.save(user).toDTO()
     }
 
