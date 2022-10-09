@@ -55,6 +55,14 @@ class Comment (
     }
 
     override fun hashCode() = Objects.hashCode(commentId)
+
+    fun toDTO(): CommentDTO {
+        return CommentDTO(
+            content, createdAt, updatedAt, commentId,
+            this.user.userId, this.user.email, this.user.password,
+            this.article.articleId
+        )
+    }
 }
 
 data class CommentDTO(
@@ -66,20 +74,13 @@ data class CommentDTO(
     val email: String,
     val password: String,
     val articleId: Long
-)
+) {
+    fun toResponse(): CommentResponse {
+        return CommentResponse(this.commentId, this.email, this.content)
+    }
+}
 data class CommentRequest(val email: String, val password: String, val content: String)
 data class CommentResponse(val commentId: Long, val email: String, val content: String)
-
-fun Comment.toDTO(): CommentDTO {
-    return CommentDTO(
-        content, createdAt, updatedAt, commentId,
-        this.user!!.userId, this.user!!.email, this.user!!.password,
-        this.article!!.articleId
-    )
-}
-fun CommentDTO.toResponse(): CommentResponse {
-    return CommentResponse(this.commentId, this.email, this.content)
-}
 
 
 @Repository

@@ -58,6 +58,12 @@ class Article (
     }
 
     override fun hashCode() = Objects.hashCode(articleId)
+
+    fun toDTO(): ArticleDTO {
+        return ArticleDTO(
+            createdAt, updatedAt, title, content, articleId, user.userId, user.email, user.password
+        )
+    }
 }
 
 data class ArticleDTO(
@@ -69,23 +75,19 @@ data class ArticleDTO(
     val userId: Long,
     val email: String,
     val password: String
-)
+) {
+    fun toResponse(): ArticleResponse {
+        return ArticleResponse(
+            this.articleId,
+            this.email,
+            this.title,
+            this.content
+        )
+    }
+}
 data class ArticleRequest(val email: String, val password: String, val title: String, val content: String)
 data class ArticleResponse(val articleId: Long, val email: String, val title: String, val content: String)
 
-fun Article.toDTO(): ArticleDTO {
-    return ArticleDTO(
-        createdAt, updatedAt, title, content, articleId, user.userId, user.email, user.password
-    )
-}
-fun ArticleDTO.toResponse(): ArticleResponse {
-    return ArticleResponse(
-        this.articleId,
-        this.email,
-        this.title,
-        this.content
-    )
-}
 
 @Repository
 interface ArticleRepository: JpaRepository<Article, Long>

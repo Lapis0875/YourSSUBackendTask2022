@@ -59,6 +59,12 @@ class User(
     }
 
     override fun hashCode() = Objects.hashCode(userId)
+
+    fun toDTO(): UserDTO {
+        return UserDTO(
+            email, password, username, createdAt, updatedAt, userId
+        )
+    }
 }
 
 data class UserRequest(val email: String, val password: String, val username: String? = null)
@@ -70,16 +76,10 @@ data class UserDTO(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val userId: Long
-)
-
-fun User.toDTO(): UserDTO {
-    return UserDTO(
-        email, password, username, createdAt, updatedAt, userId
-    )
-}
-
-fun UserDTO.toResponse(): UserResponse {
-    return UserResponse(this.email, this.username)
+) {
+    fun toResponse(): UserResponse {
+        return UserResponse(this.email, this.username)
+    }
 }
 
 @Repository
